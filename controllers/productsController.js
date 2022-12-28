@@ -118,7 +118,7 @@ controller.route('/').post(authorize, async (req, res) => {
     }
 })
 
-controller.route('/:articleNumber').delete(async (req, res) => {
+controller.route('/:articleNumber').delete(authorize, async (req, res) => {
     if(!req.params.articleNumber)
         res.status(400).json('No article number was specified.')
     else {
@@ -134,7 +134,7 @@ controller.route('/:articleNumber').delete(async (req, res) => {
 })
 
 // update a product by using put and specifying the products articleNumber that is being updated
-controller.route('/:articleNumber').put(async (req, res) => {
+controller.route('/:articleNumber').put(authorize, async (req, res) => {
     const { name, description, price, category, tag, imageName, rating } = req.body
     if(!req.params.articleNumber)
         res.status(400).json('No article number was specified.')
