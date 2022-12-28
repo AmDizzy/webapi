@@ -118,7 +118,7 @@ controller.route('/').post(authorize, async (req, res) => {
     }
 })
 
-controller.route('/:articleNumber').delete(authorize, async (req, res) => {
+controller.route('/:articleNumber').delete(async (req, res) => {
     if(!req.params.articleNumber)
         res.status(400).json('No article number was specified.')
     else {
@@ -133,24 +133,24 @@ controller.route('/:articleNumber').delete(authorize, async (req, res) => {
     }
 })
 
+// update a product by using put and specifying the products articleNumber that is being updated
 controller.route('/:articleNumber').put(async (req, res) => {
     const { name, description, price, category, tag, imageName, rating } = req.body
     if(!req.params.articleNumber)
         res.status(400).json('No article number was specified.')
     else {
         let item = await productSchema.findById(req.params.articleNumber)
-        let product = await productSchema.updateMany({
-            name,
-            description,
-            price,
-            category,
-            tag,
-            imageName,
-            rating
-        })
 
         if (item) {
-            await productSchema.updateOne(product)
+            await productSchema.updateOne(item, {
+                name,
+                description,
+                price,
+                category,
+                tag,
+                imageName,
+                rating
+            })
             res.status(200).json({text: `Product ${req.params.articleNumber} was successfully updated.`})
         } else {
             res.status(404).json({text: `Product ${req.params.articleNumber} was not found.`})
