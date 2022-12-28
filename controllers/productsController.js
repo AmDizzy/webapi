@@ -1,6 +1,7 @@
 const express = require('express')
 const controller = express.Router()
 
+const { authorize } = require('../middlewares/authorazation')
 const productSchema = require('../schemas/productSchema')
 
 // unsecured routes
@@ -71,7 +72,7 @@ controller.route('/:tag/:take').get(async (req, res) => {
 })
 
 controller.route('/product/details/:articleNumber').get(async (req, res) => {
-    const product = await productSchema.findById(req.params.articleNumber)
+    let product = await productSchema.findById(req.params.articleNumber)
     if(product) {
         res.status(200).json({
             articleNumber: product._id,
@@ -90,18 +91,18 @@ controller.route('/product/details/:articleNumber').get(async (req, res) => {
 
 // secured routes
 
-controller.route('/').post(async (req, res) => {
+controller.route('/').post(authorize, async (req, res) => {
     const { name, description, price, category, tag, imageName, rating } = req.body
 
     if (!name || !price) {
         res.status(400).json({text: 'Name and price is required.'})
     }
 
-    const item_exists = await productSchema.findOne({name})
+    let item_exists = await productSchema.findOne({name})
     if (item_exists) {
         res.status(409).json({text: 'A product with the same name already exists.'})
     } else {
-        const product = await productSchema.create({
+        let product = await productSchema.create({
             name,
             description,
             price,
@@ -117,11 +118,11 @@ controller.route('/').post(async (req, res) => {
     }
 })
 
-controller.route('/:articleNumber').delete(async (req, res) => {
+controller.route('/:articleNumber').delete(authorize, async (req, res) => {
     if(!req.params.articleNumber)
         res.status(400).json('No article number was specified.')
     else {
-        const item = await productSchema.findById(req.params.articleNumber)
+        let item = await productSchema.findById(req.params.articleNumber)
 
         if (item) {
             await productSchema.remove(item)
@@ -132,8 +133,30 @@ controller.route('/:articleNumber').delete(async (req, res) => {
     }
 })
 
+controller.route('/:articleNumber').put(async (req, res) => {
+    const { name, description, price, category, tag, imageName, rating } = req.body
+    if(!req.params.articleNumber)
+        res.status(400).json('No article number was specified.')
+    else {
+        let item = await productSchema.findById(req.params.articleNumber)
+        let product = await productSchema.updateMany({
+            name,
+            description,
+            price,
+            category,
+            tag,
+            imageName,
+            rating
+        })
 
-
+        if (item) {
+            await productSchema.updateOne(product)
+            res.status(200).json({text: `Product ${req.params.articleNumber} was successfully updated.`})
+        } else {
+            res.status(404).json({text: `Product ${req.params.articleNumber} was not found.`})
+        }
+    }
+})
 
 
 module.exports = controller

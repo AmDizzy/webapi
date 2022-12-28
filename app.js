@@ -1,8 +1,7 @@
 require('dotenv').config()
-
+const cors = require('cors')
 const port = process.env.SERVERAPI_PORT
 const mongoDB = require('./mongodb_server')
-const cors = require('cors')
 const bodyParser = require('body-parser')
 const express = require('express')
 const app = express ()
@@ -15,9 +14,7 @@ app.use(bodyParser.json())
 
 // routes
 app.use('/api/products', require('./controllers/productsController'))
-
-app.use('/api/users', require('./controllers/usersController'))
-
+app.use('/api/authentication', require('./controllers/authenticationController'))
 
 
 // start web api
